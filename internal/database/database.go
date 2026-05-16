@@ -9,7 +9,7 @@ import (
 	"gorm.io/gorm/logger"
 )
 
-func New(cfg config.DatabaseConfig) (*gorm.DB, error) {
+func New(cfg *config.DatabaseConfig) (*gorm.DB, error) {
 	// DSN = Data Source Name
 	// It is the connection string used to connect to the database.
 	dsn := fmt.Sprintf(
