@@ -36,7 +36,7 @@ func main() {
 	defer mainDB.Close()
 	gin.SetMode(cfg.Server.GinMode)
 
-	srv := server.New(cfg, log, db)
+	srv := server.New(cfg, &log, db)
 
 	httpServer := &http.Server{
 		Addr:         fmt.Sprintf(":%s", cfg.Server.Port),
@@ -61,7 +61,7 @@ func main() {
 	defer cancel()
 
 	if err := httpServer.Shutdown(ctx); err != nil {
-		log.Fatal().Err(err).Msg("Failed to shutdown server")
+		log.Error().Err(err).Msg("Failed to shutdown server")
 	}
 
 	log.Info().Msg("Shutting down database")

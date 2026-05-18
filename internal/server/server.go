@@ -11,13 +11,13 @@ import (
 
 type Server struct {
 	Config *config.Config
-	Logger zerolog.Logger
+	Logger *zerolog.Logger
 	DB     *gorm.DB
 }
 
-func New(config *config.Config, logger zerolog.Logger, db *gorm.DB) *Server {
+func New(cfg *config.Config, logger *zerolog.Logger, db *gorm.DB) *Server {
 	return &Server{
-		Config: config,
+		Config: cfg,
 		Logger: logger,
 		DB:     db,
 	}
