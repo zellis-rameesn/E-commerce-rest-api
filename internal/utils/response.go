@@ -67,16 +67,16 @@ func BadRequestResponse(c *gin.Context, statusCode int, msg string, err error) {
 	ErrorResponse(c, http.StatusBadRequest, msg, err)
 }
 
-func UnauthorizedResponse(c *gin.Context, statusCode int, msg string, err error) {
-	ErrorResponse(c, http.StatusUnauthorized, msg, err)
+func UnauthorizedResponse(c *gin.Context, msg string) {
+	ErrorResponse(c, http.StatusUnauthorized, msg, nil)
 }
 
-func ForbiddenResponse(c *gin.Context, statusCode int, msg string, err error) {
-	ErrorResponse(c, http.StatusForbidden, msg, err)
+func ForbiddenResponse(c *gin.Context, msg string) {
+	ErrorResponse(c, http.StatusForbidden, msg, nil)
 }
 
-func NotFoundResponse(c *gin.Context, statusCode int, msg string, err error) {
-	ErrorResponse(c, http.StatusNotFound, msg, err)
+func NotFoundResponse(c *gin.Context, msg string) {
+	ErrorResponse(c, http.StatusNotFound, msg, nil)
 }
 
 func InternalServerErrorResponse(c *gin.Context, statusCode int, msg string, err error) {
