@@ -18,7 +18,7 @@ func (s *Server) register(c *gin.Context) {
 	if err != nil {
 		utils.BadRequestResponse(c, "Registration failed", err)
 	}
-	utils.CreatedResponse(c, "Registration successfull", authResponse)
+	utils.CreatedResponse(c, "Registration successful", authResponse)
 }
 
 func (s *Server) login(c *gin.Context) {
@@ -32,7 +32,7 @@ func (s *Server) login(c *gin.Context) {
 	if err != nil {
 		utils.UnauthorizedResponse(c, "Login failed")
 	}
-	utils.SuccessResponse(c, "Login successfull", authResponse)
+	utils.SuccessResponse(c, "Login successful", authResponse)
 }
 
 func (s *Server) refreshToken(c *gin.Context) {
@@ -46,7 +46,7 @@ func (s *Server) refreshToken(c *gin.Context) {
 	if err != nil {
 		utils.BadRequestResponse(c, "Failed to generate token", err)
 	}
-	utils.SuccessResponse(c, "Token refresh successfull", authResponse)
+	utils.SuccessResponse(c, "Token refresh successful", authResponse)
 
 }
 
@@ -61,5 +61,5 @@ func (s *Server) logout(c *gin.Context) {
 	if err != nil {
 		utils.BadRequestResponse(c, "Logout failed", err)
 	}
-	utils.SuccessResponse(c, "Logout successfull", nil)
+	utils.SuccessResponse(c, "Logout successful", nil)
 }

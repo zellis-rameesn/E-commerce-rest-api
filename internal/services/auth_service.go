@@ -17,9 +17,9 @@ type AuthService struct {
 	config *config.Config
 }
 
-func NewAuthService(DB *gorm.DB, cfg *config.Config) *AuthService {
+func NewAuthService(db *gorm.DB, cfg *config.Config) *AuthService {
 	return &AuthService{
-		db:     DB,
+		db:     db,
 		config: cfg,
 	}
 }
@@ -28,7 +28,7 @@ func (a *AuthService) Register(req *dto.RegisterRequest) (*dto.AuthResponse, err
 	// Check if user exists
 	var existingUser models.User
 	if err := a.db.Where("email = ?", req.Email).First(&existingUser).Error; err != nil {
-		return nil, errors.New("User already present")
+		return nil, errors.New("user already present")
 	}
 	hashedPassword, err := utils.HashPassword(req.Password)
 	if err != nil {
@@ -43,7 +43,7 @@ func (a *AuthService) Register(req *dto.RegisterRequest) (*dto.AuthResponse, err
 		Phone:     req.Phone,
 		Role:      models.UserRoleCustomer,
 	}
-	if err = a.db.Create(&user).Error; err != nil {
+	if err := a.db.Create(&user).Error; err != nil {
 		return nil, err
 	}
 	cart := models.Cart{
@@ -59,10 +59,10 @@ func (a *AuthService) Register(req *dto.RegisterRequest) (*dto.AuthResponse, err
 func (a *AuthService) Login(req *dto.LoginRequest) (*dto.AuthResponse, error) {
 	var user models.User
 	if err := a.db.Where("email = ? AND is_active = ?", req.Email, true).First(&user).Error; err != nil {
-		return nil, errors.New("User not found!")
+		return nil, errors.New("user not found")
 	}
 	if isValidPassword := utils.CheckPassword(user.Password, req.Password); !isValidPassword {
-		return nil, errors.New("Invalid Password")
+		return nil, errors.New("invalid Password")
 	}
 
 	return a.GenerateAuthResponse(&user)
@@ -71,19 +71,19 @@ func (a *AuthService) Login(req *dto.LoginRequest) (*dto.AuthResponse, error) {
 func (a *AuthService) RefreshToken(req *dto.RefreshTokenRequest) (*dto.AuthResponse, error) {
 	claims, err := utils.ValidateToken(req.RefreshToken, a.config.JWT.Secret)
 	if err != nil {
-		return nil, errors.New("Invalid token!")
+		return nil, errors.New("invalid token")
 	}
 	var refreshToken models.RefreshToken
 	if err = a.db.Where("token = ? AND expires_at > ?", req.RefreshToken, time.Now()).First(&refreshToken).Error; err != nil {
-		return nil, errors.New("Refresh token not found or expired!")
+		return nil, errors.New("refresh token not found or expired")
 	}
 	var user models.User
 	if err = a.db.First(&user, claims.UserID).Error; err != nil {
-		return nil, errors.New("User not found!")
+		return nil, errors.New("user not found")
 	}
 
 	if tx := a.db.Delete(&refreshToken); tx.Error != nil {
-		return nil, errors.New("Failed to refresh token!")
+		return nil, errors.New("failed to refresh token")
 	}
 
 	return a.GenerateAuthResponse(&user)
@@ -105,7 +105,7 @@ func (a *AuthService) GenerateAuthResponse(user *models.User) (*dto.AuthResponse
 		ExpiresAt: time.Now().Add(a.config.JWT.RefreshTokenExpires),
 	}
 	if tx := a.db.Create(refreshTokenModel); tx.Error != nil {
-		return nil, errors.New("Failed to update refresh token!")
+		return nil, errors.New("failed to update refresh token")
 	}
 
 	authReponse := &dto.AuthResponse{
