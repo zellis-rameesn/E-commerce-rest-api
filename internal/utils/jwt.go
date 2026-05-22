@@ -6,18 +6,19 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/zellis-rameesn/go-ecommerce/internal/config"
+	"github.com/zellis-rameesn/go-ecommerce/internal/models"
 )
 
 // Claims contain data for the user
 type Claims struct {
-	UserID uint   `json:"user_id"`
-	Email  string `json:"email"`
-	Role   string `jsonn:"role"`
+	UserID uint            `json:"user_id"`
+	Email  string          `json:"email"`
+	Role   models.UserRole `jsonn:"role"`
 	jwt.RegisteredClaims
 }
 
 // Generate access and refresh tokens
-func GenerateTokens(cfg *config.JWTConfig, userID uint, email, role string) (accessToken, refreshToken string, err error) {
+func GenerateTokens(cfg *config.JWTConfig, userID uint, email string, role models.UserRole) (accessToken, refreshToken string, err error) {
 	// accessToken
 	accessClaims := &Claims{
 		UserID: userID,

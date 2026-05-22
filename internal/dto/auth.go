@@ -1,5 +1,7 @@
 package dto
 
+import "github.com/zellis-rameesn/go-ecommerce/internal/models"
+
 type RegisterRequest struct {
 	Email     string `json:"email" binding:"required,email"`
 	Password  string `json:"password" binding:"required,min=8"`
@@ -24,13 +26,13 @@ type AuthResponse struct {
 }
 
 type UserResponse struct {
-	ID        uint   `json:"id"`
-	Email     string `json:"email"`
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
-	Phone     string `json:"phone"`
-	Role      string `json:"role"`
-	IsActive  bool   `json:"is_active"`
+	ID        uint            `json:"id"`
+	Email     string          `json:"email"`
+	FirstName string          `json:"first_name"`
+	LastName  string          `json:"last_name"`
+	Phone     string          `json:"phone"`
+	Role      models.UserRole `json:"role"`
+	IsActive  bool            `json:"is_active"`
 }
 
 type UpdateProfileRequest struct {
