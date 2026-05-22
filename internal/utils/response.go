@@ -63,7 +63,7 @@ func ErrorResponse(c *gin.Context, statusCode int, msg string, err error) {
 	c.JSON(statusCode, response)
 }
 
-func BadRequestResponse(c *gin.Context, statusCode int, msg string, err error) {
+func BadRequestResponse(c *gin.Context, msg string, err error) {
 	ErrorResponse(c, http.StatusBadRequest, msg, err)
 }
 
