@@ -25,13 +25,13 @@ func GenerateTokens(cfg *config.JWTConfig, userID uint, email string, role model
 		Email:  email,
 		Role:   role,
 		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(cfg.RefreshTokenExpires)),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(cfg.ExpiresIn)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 		},
 	}
 
-	at := jwt.NewWithClaims(jwt.SigningMethodES256, accessClaims)
-	accessTokenString, err := at.SignedString(cfg.Secret)
+	at := jwt.NewWithClaims(jwt.SigningMethodHS256, accessClaims)
+	accessTokenString, err := at.SignedString([]byte(cfg.Secret))
 	if err != nil {
 		return "", "", err
 	}

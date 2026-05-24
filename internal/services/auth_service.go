@@ -27,7 +27,7 @@ func NewAuthService(db *gorm.DB, cfg *config.Config) *AuthService {
 func (a *AuthService) Register(req *dto.RegisterRequest) (*dto.AuthResponse, error) {
 	// Check if user exists
 	var existingUser models.User
-	if err := a.db.Where("email = ?", req.Email).First(&existingUser).Error; err != nil {
+	if err := a.db.Where("email = ?", req.Email).First(&existingUser).Error; err == nil {
 		return nil, errors.New("user already present")
 	}
 	hashedPassword, err := utils.HashPassword(req.Password)
