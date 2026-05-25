@@ -38,6 +38,16 @@ func (s *Server) SetupRoutes() *gin.Engine {
 			auth.POST("/refresh", s.refreshToken)
 			auth.POST("/logout", s.logout)
 		}
+
+		protected := api.Group("/")
+		protected.Use(s.authMiddleware)
+		{
+			user := protected.Group("/user")
+			{ //nolint:gocritic // I need this for readability
+				user.GET("/profile", s.getProfile)
+				user.PUT("/update-profile", s.updateProfile)
+			}
+		}
 	}
 
 	return router

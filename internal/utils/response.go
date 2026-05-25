@@ -79,6 +79,6 @@ func NotFoundResponse(c *gin.Context, msg string) {
 	ErrorResponse(c, http.StatusNotFound, msg, nil)
 }
 
-func InternalServerErrorResponse(c *gin.Context, statusCode int, msg string, err error) {
+func InternalServerErrorResponse(c *gin.Context, msg string, err error) {
 	ErrorResponse(c, http.StatusInternalServerError, msg, err)
 }
