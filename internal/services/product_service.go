@@ -75,3 +75,7 @@ func (p *ProductService) UpdateCategory(id uint, req *dto.UpdateCategoryRequest)
 		IsActive:    category.IsActive,
 	}, nil
 }
+
+func (p *ProductService) DeleteCategory(id uint) error {
+	return p.db.Delete(&models.Category{}, id).Error
+}
