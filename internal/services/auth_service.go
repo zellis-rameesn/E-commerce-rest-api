@@ -78,11 +78,11 @@ func (a *AuthService) RefreshToken(req *dto.RefreshTokenRequest) (*dto.AuthRespo
 		return nil, errors.New("refresh token not found or expired")
 	}
 	var user models.User
-	if err = a.db.First(&user, claims.UserID).Error; err != nil {
+	if err := a.db.First(&user, claims.UserID).Error; err != nil {
 		return nil, errors.New("user not found")
 	}
 
-	if tx := a.db.Delete(&refreshToken); tx.Error != nil {
+	if err := a.db.Delete(&refreshToken).Error; err != nil {
 		return nil, errors.New("failed to refresh token")
 	}
 
@@ -104,7 +104,7 @@ func (a *AuthService) GenerateAuthResponse(user *models.User) (*dto.AuthResponse
 		Token:     refreshToken,
 		ExpiresAt: time.Now().Add(a.config.JWT.RefreshTokenExpires),
 	}
-	if tx := a.db.Create(refreshTokenModel); tx.Error != nil {
+	if err := a.db.Create(refreshTokenModel).Error; err != nil {
 		return nil, errors.New("failed to update refresh token")
 	}
 

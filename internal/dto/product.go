@@ -8,7 +8,8 @@ type CreateCategoryRequest struct {
 type UpdateCategoryRequest struct {
 	Name        string `json:"name" binding:"required"`
 	Description string `json:"description"`
-	IsActive    *bool  `json:"is_active"`
+	// pointer allows to distinguish between false and nil, otherwise if nothing is sent from client it's taken as false
+	IsActive *bool `json:"is_active"`
 }
 
 type CategoryResponse struct {
