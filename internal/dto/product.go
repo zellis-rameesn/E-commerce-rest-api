@@ -2,7 +2,7 @@ package dto
 
 type CreateCategoryRequest struct {
 	Name        string `json:"name" binding:"required"`
-	Description string `json:"description"`
+	Description string `json:"description" binding:"max=80"`
 }
 
 type UpdateCategoryRequest struct {
