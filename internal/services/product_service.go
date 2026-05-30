@@ -166,6 +166,10 @@ func (p *ProductService) UpdateProduct(id uint, req *dto.UpdateProductRequest) (
 	return p.GetProduct(id)
 }
 
+func (p *ProductService) DeleteProduct(id uint) error {
+	return p.db.Delete(&models.Product{}, id).Error
+}
+
 func (p *ProductService) CreateProductResponse(product *models.Product) *dto.ProductResponse {
 
 	productImages := make([]dto.ProductImageResponse, len(product.Images))
