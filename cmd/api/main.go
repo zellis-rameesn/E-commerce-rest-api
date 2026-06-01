@@ -15,6 +15,7 @@ import (
 	"github.com/zellis-rameesn/go-ecommerce/internal/database"
 	"github.com/zellis-rameesn/go-ecommerce/internal/logger"
 	"github.com/zellis-rameesn/go-ecommerce/internal/server"
+	"github.com/zellis-rameesn/go-ecommerce/internal/services"
 )
 
 func main() {
@@ -36,7 +37,11 @@ func main() {
 	defer mainDB.Close()
 	gin.SetMode(cfg.Server.GinMode)
 
-	srv := server.New(cfg, &log, db)
+	authService := services.NewAuthService(db, cfg)
+	userService := services.NewUserService(db)
+	productService := services.NewProductService(db)
+
+	srv := server.New(cfg, &log, db, authService, userService, productService)
 
 	httpServer := &http.Server{
 		Addr:         fmt.Sprintf(":%s", cfg.Server.Port),

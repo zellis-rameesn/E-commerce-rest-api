@@ -6,20 +6,27 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog"
 	"github.com/zellis-rameesn/go-ecommerce/internal/config"
+	"github.com/zellis-rameesn/go-ecommerce/internal/services"
 	"gorm.io/gorm"
 )
 
 type Server struct {
-	Config *config.Config
-	Logger *zerolog.Logger
-	DB     *gorm.DB
+	Config         *config.Config
+	Logger         *zerolog.Logger
+	DB             *gorm.DB
+	AuthService    *services.AuthService
+	UserService    *services.UserService
+	ProductService *services.ProductService
 }
 
-func New(cfg *config.Config, logger *zerolog.Logger, db *gorm.DB) *Server {
+func New(cfg *config.Config, logger *zerolog.Logger, db *gorm.DB, authService *services.AuthService, userService *services.UserService, productService *services.ProductService) *Server {
 	return &Server{
-		Config: cfg,
-		Logger: logger,
-		DB:     db,
+		Config:         cfg,
+		Logger:         logger,
+		DB:             db,
+		AuthService:    authService,
+		UserService:    userService,
+		ProductService: productService,
 	}
 }
 
@@ -48,7 +55,30 @@ func (s *Server) SetupRoutes() *gin.Engine {
 				user.PUT("/update-profile", s.updateProfile)
 			}
 		}
+		{
+			category := protected.Group("/categories")
+			category.Use(s.adminMiddleware)
+			{ //nolint:gocritic // I need this for readability
+				category.POST("/", s.createCategory)
+				category.PUT("/:id", s.updateCategory)
+				category.DELETE("/:id", s.deleteCategory)
+			}
+		}
+		{
+			product := protected.Group("/products")
+			product.Use(s.adminMiddleware)
+			{ //nolint:gocritic // I need this for readability
+				product.POST("/", s.createProduct)
+				product.PUT("/:id", s.updateProduct)
+				product.DELETE("/:id", s.deleteProduct)
+			}
+		}
 	}
+
+	// public routes
+	api.GET("/categories", s.getCategories)
+	api.GET("/products", s.getProducts)
+	api.GET("/product/:id", s.getProduct)
 
 	return router
 }

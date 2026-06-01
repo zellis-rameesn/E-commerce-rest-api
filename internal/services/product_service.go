@@ -193,5 +193,11 @@ func (p *ProductService) CreateProductResponse(product *models.Product) *dto.Pro
 		Price:       product.Price,
 		IsActive:    product.IsActive,
 		Images:      productImages,
+		Category: dto.CategoryResponse{
+			ID:          product.Category.ID,
+			Name:        product.Category.Description,
+			Description: product.Category.Description,
+			IsActive:    product.Category.IsActive,
+		},
 	}
 }

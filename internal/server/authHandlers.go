@@ -3,7 +3,6 @@ package server
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/zellis-rameesn/go-ecommerce/internal/dto"
-	"github.com/zellis-rameesn/go-ecommerce/internal/services"
 	"github.com/zellis-rameesn/go-ecommerce/internal/utils"
 )
 
@@ -13,9 +12,8 @@ func (s *Server) register(c *gin.Context) {
 		utils.BadRequestResponse(c, "Invalid request data", err)
 		return
 	}
-	authService := services.NewAuthService(s.DB, s.Config)
 
-	authResponse, err := authService.Register(&req)
+	authResponse, err := s.AuthService.Register(&req)
 	if err != nil {
 		utils.BadRequestResponse(c, "Registration failed", err)
 		return
@@ -29,9 +27,8 @@ func (s *Server) login(c *gin.Context) {
 		utils.BadRequestResponse(c, "Invalid request data", err)
 		return
 	}
-	authService := services.NewAuthService(s.DB, s.Config)
 
-	authResponse, err := authService.Login(&req)
+	authResponse, err := s.AuthService.Login(&req)
 	if err != nil {
 		utils.UnauthorizedResponse(c, "Login failed")
 		return
@@ -45,9 +42,8 @@ func (s *Server) refreshToken(c *gin.Context) {
 		utils.BadRequestResponse(c, "Invalid request data", err)
 		return
 	}
-	authService := services.NewAuthService(s.DB, s.Config)
 
-	authResponse, err := authService.RefreshToken(&req)
+	authResponse, err := s.AuthService.RefreshToken(&req)
 	if err != nil {
 		utils.BadRequestResponse(c, "Failed to generate token", err)
 		return
@@ -62,9 +58,8 @@ func (s *Server) logout(c *gin.Context) {
 		utils.BadRequestResponse(c, "Invalid request data", err)
 		return
 	}
-	authService := services.NewAuthService(s.DB, s.Config)
 
-	err := authService.Logout(req.RefreshToken)
+	err := s.AuthService.Logout(req.RefreshToken)
 	if err != nil {
 		utils.BadRequestResponse(c, "Logout failed", err)
 		return

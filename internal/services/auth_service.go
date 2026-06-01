@@ -114,7 +114,7 @@ func (a *AuthService) GenerateAuthResponse(user *models.User) (*dto.AuthResponse
 			FirstName: user.FirstName,
 			LastName:  user.LastName,
 			Phone:     user.Phone,
-			Role:      models.UserRoleAdmin,
+			Role:      user.Role,
 			IsActive:  user.IsActive,
 		},
 		AccessToken:  accessToken,
