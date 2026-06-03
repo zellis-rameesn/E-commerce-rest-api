@@ -28,7 +28,7 @@ func (u *UploadService) UploadProductImage(productID uint, file *multipart.FileH
 	}
 	path := fmt.Sprintf("products/%d/%s", productID, file.Filename)
 
-	return path, nil
+	return u.Provider.UploadFile(file, path)
 }
 
 func isValidImageExt(ext string) bool {
