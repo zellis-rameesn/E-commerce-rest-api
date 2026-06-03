@@ -170,6 +170,19 @@ func (p *ProductService) DeleteProduct(id uint) error {
 	return p.db.Delete(&models.Product{}, id).Error
 }
 
+func (p *ProductService) AddProductImage(id uint, url, altText string) error {
+	var count int64
+	p.db.Model(&models.ProductImage{}).Where("product_id = ?", id).Count(&count)
+
+	image := &models.ProductImage{
+		ProductID: id,
+		URL:       url,
+		AltText:   altText,
+		IsPrimary: count == 0, // First image is primary
+	}
+	return p.db.Create(image).Error
+}
+
 func (p *ProductService) CreateProductResponse(product *models.Product) *dto.ProductResponse {
 
 	productImages := make([]dto.ProductImageResponse, len(product.Images))
