@@ -13,6 +13,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/zellis-rameesn/go-ecommerce/internal/config"
 	"github.com/zellis-rameesn/go-ecommerce/internal/database"
+	"github.com/zellis-rameesn/go-ecommerce/internal/interfaces"
 	"github.com/zellis-rameesn/go-ecommerce/internal/logger"
 	"github.com/zellis-rameesn/go-ecommerce/internal/providers"
 	"github.com/zellis-rameesn/go-ecommerce/internal/server"
@@ -41,7 +42,14 @@ func main() {
 	authService := services.NewAuthService(db, cfg)
 	userService := services.NewUserService(db)
 	productService := services.NewProductService(db)
-	uploadService := services.NewUploadService(providers.NewLocalProvider(cfg.Upload.Path))
+
+	var uploadProvider interfaces.UploadInterface
+	if cfg.Upload.Provider == "s3" {
+		uploadProvider = providers.NewS3Provider(&cfg.AWS)
+	} else {
+		uploadProvider = providers.NewLocalProvider(cfg.Upload.Path)
+	}
+	uploadService := services.NewUploadService(uploadProvider)
 
 	srv := server.New(cfg, &log, db, authService, userService, productService, uploadService)
 
