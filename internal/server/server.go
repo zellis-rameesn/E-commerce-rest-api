@@ -17,9 +17,10 @@ type Server struct {
 	AuthService    *services.AuthService
 	UserService    *services.UserService
 	ProductService *services.ProductService
+	UploadService  *services.UploadService
 }
 
-func New(cfg *config.Config, logger *zerolog.Logger, db *gorm.DB, authService *services.AuthService, userService *services.UserService, productService *services.ProductService) *Server {
+func New(cfg *config.Config, logger *zerolog.Logger, db *gorm.DB, authService *services.AuthService, userService *services.UserService, productService *services.ProductService, uploadService *services.UploadService) *Server {
 	return &Server{
 		Config:         cfg,
 		Logger:         logger,
@@ -27,12 +28,15 @@ func New(cfg *config.Config, logger *zerolog.Logger, db *gorm.DB, authService *s
 		AuthService:    authService,
 		UserService:    userService,
 		ProductService: productService,
+		UploadService:  uploadService,
 	}
 }
 
 func (s *Server) SetupRoutes() *gin.Engine {
 	router := gin.Default()
 	router.Use(s.corsMiddleware)
+
+	router.Static("/uploads", "./uploads")
 
 	router.GET("/health", s.healthCheck)
 
@@ -71,6 +75,7 @@ func (s *Server) SetupRoutes() *gin.Engine {
 				product.POST("/", s.createProduct)
 				product.PUT("/:id", s.updateProduct)
 				product.DELETE("/:id", s.deleteProduct)
+				product.POST("/:id/image", s.uploadImage)
 			}
 		}
 	}

@@ -14,6 +14,7 @@ import (
 	"github.com/zellis-rameesn/go-ecommerce/internal/config"
 	"github.com/zellis-rameesn/go-ecommerce/internal/database"
 	"github.com/zellis-rameesn/go-ecommerce/internal/logger"
+	"github.com/zellis-rameesn/go-ecommerce/internal/providers"
 	"github.com/zellis-rameesn/go-ecommerce/internal/server"
 	"github.com/zellis-rameesn/go-ecommerce/internal/services"
 )
@@ -40,8 +41,9 @@ func main() {
 	authService := services.NewAuthService(db, cfg)
 	userService := services.NewUserService(db)
 	productService := services.NewProductService(db)
+	uploadService := services.NewUploadService(providers.NewLocalProvider(cfg.Upload.Path))
 
-	srv := server.New(cfg, &log, db, authService, userService, productService)
+	srv := server.New(cfg, &log, db, authService, userService, productService, uploadService)
 
 	httpServer := &http.Server{
 		Addr:         fmt.Sprintf(":%s", cfg.Server.Port),
