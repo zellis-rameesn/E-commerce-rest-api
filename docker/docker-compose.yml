@@ -1,5 +1,19 @@
-
 services:
+  # go-api:
+  #   build:
+  #     context: ..
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - "8080:8080"
+  #   environment:
+  #     DB_HOST: postgres
+  #     DB_NAME: ecommerce_shop
+  #     DB_USER: postgres
+  #     DB_PASSWORD: password
+  #     DB_PORT: "5432"
+  #   depends_on:
+  #     - postgres
+
   postgres:
     image: postgres:12-alpine
     container_name: postgres_container
@@ -11,6 +25,17 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+
+  cdn:
+    image: nginx:alpine
+    ports:
+      - "8081:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ../uploads:/var/www/uploads
+    depends_on:
+      - localstack
+
 
   localstack:
     image: localstack/localstack:3.4.0

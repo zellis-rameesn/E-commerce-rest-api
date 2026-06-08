@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/google/uuid"
 	"github.com/zellis-rameesn/go-ecommerce/internal/interfaces"
 )
 
@@ -26,13 +27,14 @@ func (u *UploadService) UploadProductImage(productID uint, file *multipart.FileH
 	if !isValidImageExt(ext) {
 		return "", fmt.Errorf("Invalid file type %s", ext)
 	}
-	path := fmt.Sprintf("products/%d/%s", productID, file.Filename)
+
+	path := fmt.Sprintf("products/%d/%s%s", productID, uuid.New().String(), ext)
 
 	return u.Provider.UploadFile(file, path)
 }
 
 func isValidImageExt(ext string) bool {
-	allValidExts := []string{".jpg", ".jpeg", ".png", ".gif", ".webp"}
+	allValidExts := []string{".jpg", ".jpeg", ".png", ".gif", ".webp", ".avif"}
 
 	for _, validExt := range allValidExts {
 		if ext == validExt {
