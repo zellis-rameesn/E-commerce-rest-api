@@ -48,6 +48,7 @@ type AWSConfig struct {
 type UploadConfig struct {
 	Path        string
 	MaxFileSize int64
+	Provider    string
 }
 
 func Load() *Config {
@@ -85,6 +86,7 @@ func Load() *Config {
 		},
 		Upload: UploadConfig{
 			Path:        getEnv("UPLOAD_PATH", "./uploads"),
+			Provider:    getEnv("UPLOAD_PROVIDER", "local"),
 			MaxFileSize: maxUploadSize,
 		},
 	}
