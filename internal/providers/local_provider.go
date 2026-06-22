@@ -22,7 +22,7 @@ func (p *LocalProvider) UploadFile(file *multipart.FileHeader, path string) (str
 
 	// create directory
 	// fullpath contains the filename hence using filepath.dir to cut out the filename
-	if err := os.MkdirAll(filepath.Dir(fullPath), 0755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(fullPath), 0o755); err != nil {
 		return "", err
 	}
 

@@ -18,9 +18,10 @@ type Server struct {
 	UserService    *services.UserService
 	ProductService *services.ProductService
 	UploadService  *services.UploadService
+	CartService    *services.CartService
 }
 
-func New(cfg *config.Config, logger *zerolog.Logger, db *gorm.DB, authService *services.AuthService, userService *services.UserService, productService *services.ProductService, uploadService *services.UploadService) *Server {
+func New(cfg *config.Config, logger *zerolog.Logger, db *gorm.DB, authService *services.AuthService, userService *services.UserService, productService *services.ProductService, uploadService *services.UploadService, cartService *services.CartService) *Server {
 	return &Server{
 		Config:         cfg,
 		Logger:         logger,
@@ -29,6 +30,7 @@ func New(cfg *config.Config, logger *zerolog.Logger, db *gorm.DB, authService *s
 		UserService:    userService,
 		ProductService: productService,
 		UploadService:  uploadService,
+		CartService:    cartService,
 	}
 }
 
@@ -76,6 +78,15 @@ func (s *Server) SetupRoutes() *gin.Engine {
 				product.PUT("/:id", s.updateProduct)
 				product.DELETE("/:id", s.deleteProduct)
 				product.POST("/:id/image", s.uploadImage)
+			}
+		}
+		{
+			cart := protected.Group("/cart")
+			{ //nolint:gocritic // I need this for readability
+				cart.GET("/", s.getCart)
+				cart.POST("/", s.addCart)
+				cart.PUT("/:itemID", s.updateCart)
+				cart.DELETE("/:itemID", s.removeCartItem)
 			}
 		}
 	}

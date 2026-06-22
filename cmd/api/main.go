@@ -42,6 +42,7 @@ func main() {
 	authService := services.NewAuthService(db, cfg)
 	userService := services.NewUserService(db)
 	productService := services.NewProductService(db)
+	cartService := services.NewCartService(db)
 
 	var uploadProvider interfaces.UploadInterface
 	if cfg.Upload.Provider == "s3" {
@@ -51,7 +52,7 @@ func main() {
 	}
 	uploadService := services.NewUploadService(uploadProvider)
 
-	srv := server.New(cfg, &log, db, authService, userService, productService, uploadService)
+	srv := server.New(cfg, &log, db, authService, userService, productService, uploadService, cartService)
 
 	httpServer := &http.Server{
 		Addr:         fmt.Sprintf(":%s", cfg.Server.Port),

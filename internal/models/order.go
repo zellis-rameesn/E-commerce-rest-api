@@ -44,7 +44,7 @@ type CartItem struct {
 	gorm.Model
 	CartID    uint `json:"cart_id" gorm:"not null"`
 	ProductID uint `json:"product_id" gorm:"not null"`
-	Quantity  uint `json:"quantity" gorm:"not null"`
+	Quantity  int  `json:"quantity" gorm:"not null"`
 	// Relationships
 	Product Product
 }

@@ -75,7 +75,7 @@ func (p *S3Provider) UploadFile(file *multipart.FileHeader, path string) (string
 func (p *S3Provider) DeleteFile(path string) error {
 	_, err := p.client.DeleteObject(context.TODO(), &s3.DeleteObjectInput{
 		Bucket: aws.String(p.bucket),
-		Key:    aws.String(strings.TrimPrefix(path, "/")), //S3 keys should not start with "/", hence removing the / prefix
+		Key:    aws.String(strings.TrimPrefix(path, "/")), // S3 keys should not start with "/", hence removing the / prefix
 	})
 	return err
 }
