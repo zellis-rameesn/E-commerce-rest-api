@@ -82,3 +82,11 @@ func NotFoundResponse(c *gin.Context, msg string) {
 func InternalServerErrorResponse(c *gin.Context, msg string, err error) {
 	ErrorResponse(c, http.StatusInternalServerError, msg, err)
 }
+
+func AbortResponse(c *gin.Context, msg string) {
+	response := Response{
+		Success: false,
+		Message: msg,
+	}
+	c.AbortWithStatusJSON(http.StatusInternalServerError, response)
+}

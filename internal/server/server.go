@@ -1,12 +1,14 @@
 package server
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog"
 	"github.com/zellis-rameesn/go-ecommerce/internal/config"
 	"github.com/zellis-rameesn/go-ecommerce/internal/services"
+	"github.com/zellis-rameesn/go-ecommerce/internal/utils"
 	"gorm.io/gorm"
 )
 
@@ -19,9 +21,10 @@ type Server struct {
 	ProductService *services.ProductService
 	UploadService  *services.UploadService
 	CartService    *services.CartService
+	OrderService   *services.OrderService
 }
 
-func New(cfg *config.Config, logger *zerolog.Logger, db *gorm.DB, authService *services.AuthService, userService *services.UserService, productService *services.ProductService, uploadService *services.UploadService, cartService *services.CartService) *Server {
+func New(cfg *config.Config, logger *zerolog.Logger, db *gorm.DB, authService *services.AuthService, userService *services.UserService, productService *services.ProductService, uploadService *services.UploadService, cartService *services.CartService, orderService *services.OrderService) *Server {
 	return &Server{
 		Config:         cfg,
 		Logger:         logger,
@@ -31,11 +34,14 @@ func New(cfg *config.Config, logger *zerolog.Logger, db *gorm.DB, authService *s
 		ProductService: productService,
 		UploadService:  uploadService,
 		CartService:    cartService,
+		OrderService:   orderService,
 	}
 }
 
 func (s *Server) SetupRoutes() *gin.Engine {
-	router := gin.Default()
+	router := gin.New()
+	router.Use(gin.Logger())
+	router.Use(s.customRecovery())
 	router.Use(s.corsMiddleware)
 
 	router.Static("/uploads", "./uploads")
@@ -89,6 +95,14 @@ func (s *Server) SetupRoutes() *gin.Engine {
 				cart.DELETE("/:itemID", s.removeCartItem)
 			}
 		}
+		{
+			order := protected.Group("/order")
+			{ //nolint:gocritic // I need this for readability
+				order.GET("/", s.getOrders)
+				order.GET("/:id", s.getOrder)
+				order.POST("/", s.createOrder)
+			}
+		}
 	}
 
 	// public routes
@@ -113,4 +127,11 @@ func (s *Server) corsMiddleware(c *gin.Context) {
 		return
 	}
 	c.Next()
+}
+
+func (s *Server) customRecovery() gin.HandlerFunc {
+	return gin.CustomRecovery(func(c *gin.Context, err any) {
+		log.Printf("PANIC: %v", err)
+		utils.AbortResponse(c, "An unexpected error has occurred")
+	})
 }
