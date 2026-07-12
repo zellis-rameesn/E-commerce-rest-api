@@ -1,5 +1,7 @@
 package dto
 
+import "github.com/zellis-rameesn/go-ecommerce/internal/models"
+
 type AddToCartRequest struct {
 	ProductID uint `json:"product_id" binding:"required"`
 	Quantity  int  `json:"quantity" binding:"required,min=1"`
@@ -26,7 +28,7 @@ type CartItemResponse struct {
 type OrderResponse struct {
 	ID          uint                `json:"id"`
 	UserID      uint                `json:"user_id"`
-	Status      string              `json:"status"`
+	Status      models.OrderStatus  `json:"status"`
 	TotalAmount float64             `json:"total_amount"`
 	OrderItems  []OrderItemResponse `json:"order_items"`
 	CreatedAt   string              `json:"created_at"`
