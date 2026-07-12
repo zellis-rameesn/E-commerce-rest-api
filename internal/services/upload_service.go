@@ -25,7 +25,7 @@ func (u *UploadService) UploadProductImage(productID uint, file *multipart.FileH
 	ext := strings.ToLower(filepath.Ext(file.Filename))
 
 	if !isValidImageExt(ext) {
-		return "", fmt.Errorf("Invalid file type %s", ext)
+		return "", fmt.Errorf("invalid file type %s", ext)
 	}
 
 	path := fmt.Sprintf("products/%d/%s%s", productID, uuid.New().String(), ext)

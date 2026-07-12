@@ -157,5 +157,5 @@ func (s *Server) uploadImage(c *gin.Context) {
 		return
 	}
 
-	utils.SuccessResponse(c, "Image uploaded successfuly", url)
+	utils.SuccessResponse(c, "Image uploaded successfully", url)
 }
