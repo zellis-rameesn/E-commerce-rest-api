@@ -48,7 +48,6 @@ func (c *CartService) AddToCart(userID uint, req *dto.AddToCartRequest) (*dto.Ca
 	}
 
 	var cartItem models.CartItem
-	c.db.Unscoped()
 	if err := c.db.Unscoped().Where("cart_id = ? AND product_id = ?", cart.ID, product.ID).First(&cartItem).Error; err != nil {
 		cartItem = models.CartItem{
 			CartID:    cart.ID,
@@ -81,14 +80,9 @@ func (c *CartService) AddToCart(userID uint, req *dto.AddToCartRequest) (*dto.Ca
 }
 
 func (c *CartService) UpdateCartItem(userID, itemID uint, req *dto.UpdateCartItemRequest) (*dto.CartResponse, error) {
-	// var cart models.Cart
 	// // preloading here will fetch all the cart items, which is not really needed since we only need the specific cart item
 	// // we cannot filter by product id since we haven't joined that table
 	// // hence using join is the better approach
-
-	// // if err := c.db.Preload("CartItems.Product").Where("user_id = ?", userID).First(&cart).Error; err != nil {
-	// // 	return nil, errors.New("cart not found!")
-	// // }
 
 	var cartItem models.CartItem
 	if err := c.db.Joins(`LEFT JOIN carts c on c.id = cart_items.cart_id`).Where(`c.user_id = ? AND cart_items.id = ?`, userID, itemID).First(&cartItem).Error; err != nil {

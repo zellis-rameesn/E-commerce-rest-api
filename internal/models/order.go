@@ -23,12 +23,11 @@ const (
 
 type OrderItem struct {
 	gorm.Model
-	OrderID   uint `json:"order_id" gorm:"not null"`
-	ProductID uint `json:"product_id" gorm:"not null"`
-	Price     uint `json:"price" gorm:"not null"`
-
+	OrderID   uint    `json:"order_id" gorm:"not null"`
+	ProductID uint    `json:"product_id" gorm:"not null"`
+	Price     float64 `json:"price" gorm:"not null"`
+	Quantity  int     `json:"quantity" gorm:"not null"`
 	// Relationships
-	Order   Order   `json:"-"`
 	Product Product `json:"-"`
 }
 
