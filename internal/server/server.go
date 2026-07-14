@@ -6,6 +6,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
+
+	_ "github.com/zellis-rameesn/go-ecommerce/docs"
 	"github.com/zellis-rameesn/go-ecommerce/internal/config"
 	"github.com/zellis-rameesn/go-ecommerce/internal/services"
 	"github.com/zellis-rameesn/go-ecommerce/internal/utils"
@@ -47,6 +51,10 @@ func (s *Server) SetupRoutes() *gin.Engine {
 	router.Static("/uploads", "./uploads")
 
 	router.GET("/health", s.healthCheck)
+
+	// Add documentation routes
+	router.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	router.StaticFile("/api-docs", "./docs/rapidoc.html")
 
 	api := router.Group("/api/v1")
 	{
@@ -91,12 +99,12 @@ func (s *Server) SetupRoutes() *gin.Engine {
 			{ //nolint:gocritic // I need this for readability
 				cart.GET("/", s.getCart)
 				cart.POST("/", s.addCart)
-				cart.PUT("/:itemID", s.updateCart)
-				cart.DELETE("/:itemID", s.removeCartItem)
+				cart.PUT("/item/:itemID", s.updateCart)
+				cart.DELETE("/item/:itemID", s.removeCartItem)
 			}
 		}
 		{
-			order := protected.Group("/order")
+			order := protected.Group("/orders")
 			{ //nolint:gocritic // I need this for readability
 				order.GET("/", s.getOrders)
 				order.GET("/:id", s.getOrder)

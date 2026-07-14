@@ -2,13 +2,14 @@
 
 help:
 	@echo "Available commands:"
-	@echo "  make build       - Build the application"
-	@echo "  make run         - Run the application"
-	@echo "  make dev         - Run the application in development mode"
-	@echo "  make lint        - Run linter on the codebase"
-	@echo "  make format      - Format the code and re-arrange imports"
-	@echo "  make migrate-up  - Apply database migrations"
-	@echo "  make migrate-down- Rollback database migrations"
+	@echo "  make build         - Build the application"
+	@echo "  make run           - Run the application"
+	@echo "  make dev           - Run the application in development mode"
+	@echo "  make lint          - Run linter on the codebase"
+	@echo "  make format        - Format the code and re-arrange imports"
+	@echo "  make migrate-up    - Apply database migrations"
+	@echo "  make migrate-down  - Rollback database migrations"
+	@echo "  make docs-generate - Generate documentation"
 	
 build:
 	go build -o bin/app ./cmd/api
@@ -37,3 +38,6 @@ docker-up:
 
 docker-down:
 	docker compose -f docker/docker-compose.yml down
+
+docs-generate:
+	swag init -g cmd/api/main.go -o docs --parseDependency --parseInternal --exclude .git,docs,docker,db

@@ -110,6 +110,7 @@ func (a *AuthService) GenerateAuthResponse(user *models.User) (*dto.AuthResponse
 
 	authReponse := &dto.AuthResponse{
 		User: dto.UserResponse{
+			ID:        user.ID,
 			Email:     user.Email,
 			FirstName: user.FirstName,
 			LastName:  user.LastName,
