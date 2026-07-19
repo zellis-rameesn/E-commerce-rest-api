@@ -12,7 +12,7 @@ help:
 	@echo "  make docs-generate - Generate documentation"
 	
 build:
-	go build -o bin/app ./cmd/api
+	go build -o bin/ ./cmd/...
 
 run:
 	go run ./cmd/api
