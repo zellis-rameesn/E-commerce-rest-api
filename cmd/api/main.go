@@ -13,6 +13,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/zellis-rameesn/go-ecommerce/internal/config"
 	"github.com/zellis-rameesn/go-ecommerce/internal/database"
+	"github.com/zellis-rameesn/go-ecommerce/internal/events"
 	"github.com/zellis-rameesn/go-ecommerce/internal/interfaces"
 	"github.com/zellis-rameesn/go-ecommerce/internal/logger"
 	"github.com/zellis-rameesn/go-ecommerce/internal/providers"
@@ -58,9 +59,17 @@ func main() {
 		log.Fatal().Err(err).Msg("Failed to get database connection")
 	}
 	defer mainDB.Close()
+
+	ctx := context.Background()
+	publisher, err := events.NewEventPublisher(ctx, cfg.AWS)
+	if err != nil {
+		log.Error().Msg("Failed to create publisher")
+		return
+	}
+
 	gin.SetMode(cfg.Server.GinMode)
 
-	authService := services.NewAuthService(db, cfg)
+	authService := services.NewAuthService(db, cfg, publisher)
 	userService := services.NewUserService(db)
 	productService := services.NewProductService(db)
 	cartService := services.NewCartService(db)

@@ -7,20 +7,23 @@ import (
 
 	"github.com/zellis-rameesn/go-ecommerce/internal/config"
 	"github.com/zellis-rameesn/go-ecommerce/internal/dto"
+	"github.com/zellis-rameesn/go-ecommerce/internal/events"
 	"github.com/zellis-rameesn/go-ecommerce/internal/models"
 	"github.com/zellis-rameesn/go-ecommerce/internal/utils"
 	"gorm.io/gorm"
 )
 
 type AuthService struct {
-	db     *gorm.DB
-	config *config.Config
+	db        *gorm.DB
+	config    *config.Config
+	publisher events.Publisher
 }
 
-func NewAuthService(db *gorm.DB, cfg *config.Config) *AuthService {
+func NewAuthService(db *gorm.DB, cfg *config.Config, publisher events.Publisher) *AuthService {
 	return &AuthService{
-		db:     db,
-		config: cfg,
+		db:        db,
+		config:    cfg,
+		publisher: publisher,
 	}
 }
 
@@ -64,7 +67,7 @@ func (a *AuthService) Login(req *dto.LoginRequest) (*dto.AuthResponse, error) {
 	if isValidPassword := utils.CheckPassword(user.Password, req.Password); !isValidPassword {
 		return nil, errors.New("invalid Password")
 	}
-
+	a.publisher.Publish("USER_LOGGED_IN", user, map[string]string{})
 	return a.GenerateAuthResponse(&user)
 }
 
