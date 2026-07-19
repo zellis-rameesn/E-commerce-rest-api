@@ -5,15 +5,9 @@ import (
 	"net"
 	"net/smtp"
 	"strconv"
-)
 
-type SmtpConfig struct {
-	Host     string
-	Port     int
-	Username string
-	Password string
-	From     string
-}
+	"github.com/zellis-rameesn/go-ecommerce/internal/config"
+)
 
 type SimpleEmail struct {
 	To      string
@@ -22,10 +16,10 @@ type SimpleEmail struct {
 }
 
 type EmailNotifier struct {
-	config *SmtpConfig
+	config *config.SMTPConfig
 }
 
-func NewEmailNotifier(config *SmtpConfig) *EmailNotifier {
+func NewEmailNotifier(config *config.SMTPConfig) *EmailNotifier {
 	return &EmailNotifier{
 		config: config,
 	}
