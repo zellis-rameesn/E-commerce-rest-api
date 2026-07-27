@@ -14,6 +14,7 @@ type Config struct {
 	JWT      JWTConfig
 	AWS      AWSConfig
 	Upload   UploadConfig
+	SMTP     SMTPConfig
 }
 
 type ServerConfig struct {
@@ -51,13 +52,21 @@ type UploadConfig struct {
 	Provider    string
 }
 
+type SMTPConfig struct {
+	Host     string
+	Port     int
+	Username string
+	Password string
+	From     string
+}
+
 func Load() *Config {
 	_ = godotenv.Load()
 
 	JWTExpiresIn, _ := time.ParseDuration(getEnv("JWT_EXPIRES_IN", "24h"))
 	RefreshTokenExpiry, _ := time.ParseDuration(getEnv("REFRESH_TOKEN_EXPIRES_IN", "72h"))
 	maxUploadSize, _ := strconv.ParseInt(getEnv("MAX_UPLOAD_SIZE", "10485760"), 10, 64)
-
+	smtpPort, _ := strconv.Atoi(getEnv("SMTP_PORT", "10485760"))
 	return &Config{
 		Server: ServerConfig{
 			Port:    getEnv("PORT", "8080"),
@@ -88,6 +97,13 @@ func Load() *Config {
 			Path:        getEnv("UPLOAD_PATH", "./uploads"),
 			Provider:    getEnv("UPLOAD_PROVIDER", "local"),
 			MaxFileSize: maxUploadSize,
+		},
+		SMTP: SMTPConfig{
+			Host:     getEnv("SMTP_HOST", "localhost"),
+			Port:     smtpPort,
+			Username: getEnv("SMTP_USERNAME", ""),
+			Password: getEnv("SMTP_PASSWORD", ""),
+			From:     getEnv("SMTP_FROM", "noreply@shop.com"),
 		},
 	}
 }
