@@ -61,7 +61,7 @@ func main() {
 	defer mainDB.Close()
 
 	ctx := context.Background()
-	publisher, err := events.NewEventPublisher(ctx, cfg.AWS)
+	publisher, err := events.NewEventPublisher(ctx, &cfg.AWS)
 	if err != nil {
 		log.Error().Msg("Failed to create publisher")
 		return

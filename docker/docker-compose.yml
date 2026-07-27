@@ -1,28 +1,54 @@
 services:
-  # go-api:
-  #   build:
-  #     context: ..
-  #     dockerfile: Dockerfile
-  #   ports:
-  #     - "8080:8080"
-  #   environment:
-  #     DB_HOST: postgres
-  #     DB_NAME: ecommerce_shop
-  #     DB_USER: postgres
-  #     DB_PASSWORD: password
-  #     DB_PORT: "5432"
-  #   depends_on:
-  #     - postgres
+  api:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      DB_HOST: postgres
+      DB_NAME: ecommerce_shop
+      DB_USER: postgres
+      DB_PASSWORD: Ramees123
+      DB_PORT: "5432"
+      AWS_S3_ENDPOINT: http://localstack:4566
+      AWS_REGION: us-east-1
+    depends_on:
+      - postgres
+      - localstack
+    command: ["./api"]
+  
+  notifier:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    ports:
+      - "8082:8082"
+    environment:
+      DB_HOST: postgres
+      DB_NAME: ecommerce_shop
+      DB_USER: postgres
+      DB_PASSWORD: Ramees123
+      DB_PORT: "5432"
+      AWS_S3_ENDPOINT: http://localstack:4566
+      AWS_REGION: us-east-1
+      SMTP_HOST: mailpit
+      SMTP_PORT: 1025
+      SMTP_FROM: noreply@shop.com
+    depends_on:
+      - postgres
+      - localstack
+    command: ["./notifier"]
 
   postgres:
     image: postgres:12-alpine
     container_name: postgres_container
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
+      POSTGRES_PASSWORD: Ramees123
       POSTGRES_DB: ecommerce_shop
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
@@ -53,20 +79,21 @@ services:
       - ./init/aws/init-localstack.sh:/etc/localstack/init/ready.d/init.sh
 
   mailpit:
-        image: axllent/mailpit
-        container_name: mailpit
-        restart: unless-stopped
-        volumes:
-            - ./data:/data
-        ports:
-            - 8025:8025
-            - 1025:1025
-        environment:
-            MP_MAX_MESSAGES: 5000
-            MP_DATABASE: /data/mailpit.db
-            MP_SMTP_AUTH_ACCEPT_ANY: 1
-            MP_SMTP_AUTH_ALLOW_INSECURE: 1 
+    image: axllent/mailpit
+    container_name: mailpit
+    restart: unless-stopped
+    volumes:
+        - mailpit_data:/data
+    ports:
+        - 8025:8025
+        - 1025:1025
+    environment:
+        MP_MAX_MESSAGES: 5000
+        MP_DATABASE: /data/mailpit.db
+        MP_SMTP_AUTH_ACCEPT_ANY: 1
+        MP_SMTP_AUTH_ALLOW_INSECURE: 1 
 
 volumes:
     postgres_data:
     localstack_data:
+    mailpit_data:

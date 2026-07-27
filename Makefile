@@ -28,7 +28,7 @@ format:
 	@goimports -w .
 
 migrate-up:
-	migrate -path db/migrations -database "postgresql://postgres:Ramees123@localhost:5432/ecommerce_shop?sslmode=disable" up
+	migrate -path db/migrations -database "postgresql://postgres:Ramees123@localhost:5433/ecommerce_shop?sslmode=disable" up
 
 migrate-down:
 	migrate -path db/migrations -database "postgresql://postgres:Ramees123@localhost:5432/ecommerce_shop?sslmode=disable" down

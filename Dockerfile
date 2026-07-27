@@ -1,14 +1,34 @@
-FROM golang:1.25.6
+FROM golang:1.25.6-alpine as builder
 
-WORKDIR /app
+WORKDIR /api
 
+# Install dependencies
 COPY go.mod go.sum ./
 RUN go mod download
 
+# Copy source code
 COPY . .
 
-RUN go build -o server ./cmd/api
+# Build all binaries
+RUN mkdir -p /api/bin && \
+    for cmd in cmd/*/; do \
+        if [ -d "$cmd" ]; then \
+            binary=$(basename $cmd); \
+            echo "Building $binary..."; \
+            CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o bin/$binary ./$cmd; \
+        fi \
+    done
 
-EXPOSE 8080
+# Final stage
+FROM alpine:latest
 
-CMD ["./server"]
+# Install ca-certificates for HTTPS requests
+RUN apk --no-cache add ca-certificates
+
+WORKDIR /root/
+
+# Copy all binaries from builder
+COPY --from=builder /api/bin/* ./
+
+# Default command (can be overridden in docker-compose)
+CMD ["./api"]

@@ -20,7 +20,7 @@ type EventPublisher struct {
 	queueName string
 }
 
-func NewEventPublisher(ctx context.Context, cfg appconfig.AWSConfig) (*EventPublisher, error) {
+func NewEventPublisher(ctx context.Context, cfg *appconfig.AWSConfig) (*EventPublisher, error) {
 	logger := watermill.NewStdLogger(false, false)
 
 	awsCfg, err := providers.CreateAwsConfig(ctx, cfg.Region, cfg.S3Endpoint, cfg.AccessKeyID, cfg.SecretAccessKey, "")

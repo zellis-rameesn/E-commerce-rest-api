@@ -19,9 +19,9 @@ type EmailNotifier struct {
 	config *config.SMTPConfig
 }
 
-func NewEmailNotifier(config *config.SMTPConfig) *EmailNotifier {
+func NewEmailNotifier(cfg *config.SMTPConfig) *EmailNotifier {
 	return &EmailNotifier{
-		config: config,
+		config: cfg,
 	}
 }
 

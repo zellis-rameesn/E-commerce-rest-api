@@ -67,7 +67,7 @@ func (a *AuthService) Login(req *dto.LoginRequest) (*dto.AuthResponse, error) {
 	if isValidPassword := utils.CheckPassword(user.Password, req.Password); !isValidPassword {
 		return nil, errors.New("invalid Password")
 	}
-	a.publisher.Publish("USER_LOGGED_IN", user, map[string]string{})
+	a.publisher.Publish(events.USER_LOGGED_IN, user, map[string]string{})
 	return a.GenerateAuthResponse(&user)
 }
 
