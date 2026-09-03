@@ -1,11 +1,47 @@
 services:
-  api:
+  # ecommerce-api:
+  #   build:
+  #     context: ..
+  #     dockerfile: Dockerfile
+  #   environment:
+  #     PORT: "8080"
+  #     DB_HOST: postgres
+  #     DB_NAME: ecommerce_shop
+  #     DB_USER: postgres
+  #     DB_PASSWORD: Ramees123
+  #     DB_PORT: "5432"
+  #     AWS_S3_ENDPOINT: http://localstack:4566
+  #     AWS_REGION: us-east-1
+    # depends_on:
+    #   - postgres
+    #   - localstack
+  #   command: ["./api"]
+  
+  api1:
     build:
       context: ..
       dockerfile: Dockerfile
-    ports:
-      - "8080:8080"
     environment:
+      INSTANCE_ID: api-1
+      PORT: "8080"
+      DB_HOST: postgres
+      DB_NAME: ecommerce_shop
+      DB_USER: postgres
+      DB_PASSWORD: Ramees123
+      DB_PORT: "5432"
+      AWS_S3_ENDPOINT: http://localstack:4566
+      AWS_REGION: us-east-1\
+    depends_on:
+      - postgres
+      - localstack
+
+  api2:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    environment:
+      INSTANCE_ID: api-2
+      PORT: "8080"
       DB_HOST: postgres
       DB_NAME: ecommerce_shop
       DB_USER: postgres
@@ -16,7 +52,24 @@ services:
     depends_on:
       - postgres
       - localstack
-    command: ["./api"]
+
+  api3:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    environment:
+      INSTANCE_ID: api-3
+      PORT: "8080"
+      DB_HOST: postgres
+      DB_NAME: ecommerce_shop
+      DB_USER: postgres
+      DB_PASSWORD: Ramees123
+      DB_PORT: "5432"
+      AWS_S3_ENDPOINT: http://localstack:4566
+      AWS_REGION: us-east-1
+    depends_on:
+      - postgres
+      - localstack
   
   notifier:
     build:
@@ -52,7 +105,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
-  cdn:
+  nginx:
     image: nginx:alpine
     ports:
       - "8081:80"
@@ -61,6 +114,9 @@ services:
       - ../uploads:/var/www/uploads
     depends_on:
       - localstack
+      - api1
+      - api2
+      - api3
 
 
   localstack:
