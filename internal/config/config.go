@@ -9,12 +9,14 @@ import (
 )
 
 type Config struct {
-	Server   ServerConfig
-	Database DatabaseConfig
-	JWT      JWTConfig
-	AWS      AWSConfig
-	Upload   UploadConfig
-	SMTP     SMTPConfig
+	Server    ServerConfig
+	Database  DatabaseConfig
+	JWT       JWTConfig
+	AWS       AWSConfig
+	Upload    UploadConfig
+	SMTP      SMTPConfig
+	Redis     RedisConfig
+	RateLimit RateLimitConfig
 }
 
 type ServerConfig struct {
@@ -60,6 +62,16 @@ type SMTPConfig struct {
 	From     string
 }
 
+type RedisConfig struct {
+	Host string
+	Port int
+}
+
+type RateLimitConfig struct {
+	Capacity   float64
+	RefillRate float64
+}
+
 func Load() *Config {
 	_ = godotenv.Load()
 
@@ -67,6 +79,10 @@ func Load() *Config {
 	RefreshTokenExpiry, _ := time.ParseDuration(getEnv("REFRESH_TOKEN_EXPIRES_IN", "72h"))
 	maxUploadSize, _ := strconv.ParseInt(getEnv("MAX_UPLOAD_SIZE", "10485760"), 10, 64)
 	smtpPort, _ := strconv.Atoi(getEnv("SMTP_PORT", "10485760"))
+	redisPort, _ := strconv.Atoi(getEnv("REDIS_PORT", "10485760"))
+	bucketCapacity, _ := strconv.ParseFloat(getEnv("RATE_LIMIT_BUCKET_CAPACITY", "1000"), 64)
+	refillRate, _ := strconv.ParseFloat(getEnv("RATE_LIMIT_REFILL_RATE", "100"), 64)
+
 	return &Config{
 		Server: ServerConfig{
 			Port:    getEnv("PORT", "8080"),
@@ -104,6 +120,14 @@ func Load() *Config {
 			Username: getEnv("SMTP_USERNAME", ""),
 			Password: getEnv("SMTP_PASSWORD", ""),
 			From:     getEnv("SMTP_FROM", "noreply@shop.com"),
+		},
+		Redis: RedisConfig{
+			Host: getEnv("REDIS_HOST", "localhost"),
+			Port: redisPort,
+		},
+		RateLimit: RateLimitConfig{
+			Capacity:   bucketCapacity,
+			RefillRate: refillRate,
 		},
 	}
 }
