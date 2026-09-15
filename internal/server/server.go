@@ -11,6 +11,7 @@ import (
 
 	_ "github.com/zellis-rameesn/go-ecommerce/docs"
 	"github.com/zellis-rameesn/go-ecommerce/internal/config"
+	"github.com/zellis-rameesn/go-ecommerce/internal/ratelimit"
 	"github.com/zellis-rameesn/go-ecommerce/internal/services"
 	"github.com/zellis-rameesn/go-ecommerce/internal/utils"
 	"gorm.io/gorm"
@@ -20,6 +21,7 @@ type Server struct {
 	Config         *config.Config
 	Logger         *zerolog.Logger
 	DB             *gorm.DB
+	RateLimiter    *ratelimit.RedisTokenBucket
 	AuthService    *services.AuthService
 	UserService    *services.UserService
 	ProductService *services.ProductService
@@ -28,11 +30,12 @@ type Server struct {
 	OrderService   *services.OrderService
 }
 
-func New(cfg *config.Config, logger *zerolog.Logger, db *gorm.DB, authService *services.AuthService, userService *services.UserService, productService *services.ProductService, uploadService *services.UploadService, cartService *services.CartService, orderService *services.OrderService) *Server {
+func New(cfg *config.Config, logger *zerolog.Logger, db *gorm.DB, rateLimiter *ratelimit.RedisTokenBucket, authService *services.AuthService, userService *services.UserService, productService *services.ProductService, uploadService *services.UploadService, cartService *services.CartService, orderService *services.OrderService) *Server {
 	return &Server{
 		Config:         cfg,
 		Logger:         logger,
 		DB:             db,
+		RateLimiter:    rateLimiter,
 		AuthService:    authService,
 		UserService:    userService,
 		ProductService: productService,
@@ -57,6 +60,14 @@ func (s *Server) SetupRoutes() *gin.Engine {
 	router.StaticFile("/api-docs", "./docs/rapidoc.html")
 
 	api := router.Group("/api/v1")
+	api.Use(s.RateLimiterMiddleware(s.RateLimiter, RateLimitConfig{
+		KeyExtractor:   IPKeyExtractor(),
+		ErrorMessage:   "Rate limit exceeded. Please try again later",
+		IncludeHeaders: true,
+		Limit:          s.Config.RateLimit.Capacity,
+		RefillRate:     s.Config.RateLimit.RefillRate,
+		FailOpen:       true,
+	}))
 	{
 		auth := api.Group("/auth")
 		{ //nolint:gocritic // I need this for readability

@@ -11,12 +11,15 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/redis/go-redis/v9"
+	"github.com/zellis-rameesn/go-ecommerce/internal/cache"
 	"github.com/zellis-rameesn/go-ecommerce/internal/config"
 	"github.com/zellis-rameesn/go-ecommerce/internal/database"
 	"github.com/zellis-rameesn/go-ecommerce/internal/events"
 	"github.com/zellis-rameesn/go-ecommerce/internal/interfaces"
 	"github.com/zellis-rameesn/go-ecommerce/internal/logger"
 	"github.com/zellis-rameesn/go-ecommerce/internal/providers"
+	"github.com/zellis-rameesn/go-ecommerce/internal/ratelimit"
 	"github.com/zellis-rameesn/go-ecommerce/internal/server"
 	"github.com/zellis-rameesn/go-ecommerce/internal/services"
 )
@@ -67,11 +70,26 @@ func main() {
 		return
 	}
 
+	redisAddress := fmt.Sprintf("%s:%d", cfg.Redis.Host, cfg.Redis.Port)
+	redisClient := redis.NewClient(&redis.Options{
+		Addr:         redisAddress,
+		DialTimeout:  1 * time.Second,
+		ReadTimeout:  1 * time.Second,
+		WriteTimeout: 1 * time.Second,
+
+		MaxRetries: 0,
+	})
+	defer redisClient.Close()
+
+	limiter := ratelimit.NewRedisTokenBucket(redisClient, cfg.RateLimit.Capacity, cfg.RateLimit.RefillRate, "ratelimit")
+
+	cacheService := cache.NewRedisClient(redisClient)
+
 	gin.SetMode(cfg.Server.GinMode)
 
 	authService := services.NewAuthService(db, cfg, publisher)
 	userService := services.NewUserService(db)
-	productService := services.NewProductService(db)
+	productService := services.NewProductService(db, cacheService)
 	cartService := services.NewCartService(db)
 	orderService := services.NewOrderService(db)
 
@@ -83,7 +101,7 @@ func main() {
 	}
 	uploadService := services.NewUploadService(uploadProvider)
 
-	srv := server.New(cfg, &log, db, authService, userService, productService, uploadService, cartService, orderService)
+	srv := server.New(cfg, &log, db, limiter, authService, userService, productService, uploadService, cartService, orderService)
 
 	httpServer := &http.Server{
 		Addr:         fmt.Sprintf(":%s", cfg.Server.Port),
