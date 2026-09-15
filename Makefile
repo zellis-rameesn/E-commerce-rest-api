@@ -18,7 +18,7 @@ run:
 	go run ./cmd/api
 
 dev: 
-	go run ./cmd/api
+	air
 
 lint: format
 	golangci-lint run ./...
@@ -31,7 +31,7 @@ migrate-up:
 	migrate -path db/migrations -database "postgresql://postgres:Ramees123@localhost:5433/ecommerce_shop?sslmode=disable" up
 
 migrate-down:
-	migrate -path db/migrations -database "postgresql://postgres:Ramees123@localhost:5432/ecommerce_shop?sslmode=disable" down
+	migrate -path db/migrations -database "postgresql://postgres:Ramees123@localhost:5433/ecommerce_shop?sslmode=disable" down
 
 docker-up:
 	docker compose -f docker/docker-compose.yml up -d
