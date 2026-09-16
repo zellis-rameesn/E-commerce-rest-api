@@ -1,8 +1,14 @@
 package services
 
 import (
+	"context"
+	"fmt"
+	"log"
 	"math"
+	"time"
 
+	"github.com/redis/go-redis/v9"
+	"github.com/zellis-rameesn/go-ecommerce/internal/cache"
 	"github.com/zellis-rameesn/go-ecommerce/internal/dto"
 	"github.com/zellis-rameesn/go-ecommerce/internal/models"
 	"github.com/zellis-rameesn/go-ecommerce/internal/utils"
@@ -11,11 +17,18 @@ import (
 
 type ProductService struct {
 	db *gorm.DB
+	rd *cache.RedisClient
 }
 
-func NewProductService(db *gorm.DB) *ProductService {
+type ProductCache struct {
+	Response []*dto.ProductResponse `json:"response"`
+	Meta     *utils.PaginationMeta  `json:"meta"`
+}
+
+func NewProductService(db *gorm.DB, rd *cache.RedisClient) *ProductService {
 	return &ProductService{
 		db: db,
+		rd: rd,
 	}
 }
 
@@ -83,12 +96,39 @@ func (p *ProductService) DeleteCategory(id uint) error {
 	return p.db.Delete(&models.Category{}, id).Error
 }
 
-func (p *ProductService) GetProducts(page, limit int) ([]*dto.ProductResponse, *utils.PaginationMeta, error) {
+func (p *ProductService) getProductsCacheVersion(ctx context.Context) int64 {
+	var version int64
+	if err := p.rd.Get(ctx, "version", &version); err == redis.Nil {
+		log.Printf("Cache miss for version %d", version)
+		_ = p.rd.Set(ctx, "version", 1, 0)
+		version = 1
+	} else if err != nil {
+		log.Printf("failed to fetch version from cache: %s", err.Error())
+		return 0
+	}
+	log.Printf("Cache hit for version %d", version)
+	return version
+}
+
+func (p *ProductService) GetProducts(ctx context.Context, page, limit int) ([]*dto.ProductResponse, *utils.PaginationMeta, error) {
 	if page < 1 {
 		page = 1
 	}
 	if limit < 1 {
 		limit = 10
+	}
+
+	version := p.getProductsCacheVersion(ctx)
+	key := fmt.Sprintf("products:version:%d:page:%d:limit:%d", version, page, limit)
+
+	if version > 0 {
+		var productsCache ProductCache
+		if err := p.rd.Get(ctx, key, &productsCache); err != nil {
+			log.Printf("Failed to fetch from cache: %s", err.Error())
+		} else {
+			log.Printf("Cache hit for key %s", key)
+			return productsCache.Response, productsCache.Meta, nil
+		}
 	}
 
 	offset := (page - 1) * limit
@@ -119,18 +159,44 @@ func (p *ProductService) GetProducts(page, limit int) ([]*dto.ProductResponse, *
 		TotalPages: int(totalProducts),
 	}
 
+	cache := ProductCache{
+		Response: response,
+		Meta:     meta,
+	}
+
+	if err := p.rd.Set(ctx, key, cache, 5*time.Minute); err != nil {
+		log.Printf("Failed to store %s in cache: %s", key, err.Error())
+	}
+
 	return response, meta, nil
 }
 
-func (p *ProductService) GetProduct(id uint) (*dto.ProductResponse, error) {
+func (p *ProductService) GetProduct(ctx context.Context, id uint) (*dto.ProductResponse, error) {
+	key := fmt.Sprintf("product:%d", id)
+	var cachedProduct dto.ProductResponse
+
+	if err := p.rd.Get(ctx, key, &cachedProduct); err != nil {
+		log.Printf("Failed to fetch from cache: %s", err.Error())
+	} else {
+		log.Printf("Cache hit for key %s", key)
+		return &cachedProduct, nil
+	}
+
 	var product models.Product
 	if err := p.db.Preload("Category").Preload("Images").First(&product, id).Error; err != nil {
 		return nil, err
 	}
-	return p.CreateProductResponse(&product), nil
+
+	productResponse := p.CreateProductResponse(&product)
+
+	if err := p.rd.Set(ctx, key, productResponse, 5*time.Minute); err != nil {
+		log.Printf("Failed to store %s in cache: %s", key, err.Error())
+	}
+
+	return productResponse, nil
 }
 
-func (p *ProductService) CreateProduct(req *dto.CreateProductRequest) (*dto.ProductResponse, error) {
+func (p *ProductService) CreateProduct(ctx context.Context, req *dto.CreateProductRequest) (*dto.ProductResponse, error) {
 	product := &models.Product{
 		CategoryID:  req.CategoryID,
 		Name:        req.Name,
@@ -144,10 +210,12 @@ func (p *ProductService) CreateProduct(req *dto.CreateProductRequest) (*dto.Prod
 		return nil, err
 	}
 
+	_ = p.rd.Increment(ctx, "version")
+
 	return p.CreateProductResponse(product), nil
 }
 
-func (p *ProductService) UpdateProduct(id uint, req *dto.UpdateProductRequest) (*dto.ProductResponse, error) {
+func (p *ProductService) UpdateProduct(ctx context.Context, id uint, req *dto.UpdateProductRequest) (*dto.ProductResponse, error) {
 	var product models.Product
 	if err := p.db.First(&product, id).Error; err != nil {
 		return nil, err
@@ -163,11 +231,28 @@ func (p *ProductService) UpdateProduct(id uint, req *dto.UpdateProductRequest) (
 		return nil, err
 	}
 
-	return p.GetProduct(id)
+	key := fmt.Sprintf("product:%d", id)
+	if err := p.rd.Delete(ctx, key); err != nil {
+		log.Printf("Failed to delete %s from cache: %s", key, err.Error())
+	}
+
+	_ = p.rd.Increment(ctx, "version")
+
+	return p.GetProduct(ctx, id)
 }
 
-func (p *ProductService) DeleteProduct(id uint) error {
-	return p.db.Delete(&models.Product{}, id).Error
+func (p *ProductService) DeleteProduct(ctx context.Context, id uint) error {
+	if err := p.db.Delete(&models.Product{}, id).Error; err != nil {
+		return err
+	}
+
+	key := fmt.Sprintf("product:%d", id)
+	if err := p.rd.Delete(ctx, key); err != nil {
+		log.Printf("Failed to delete %s from cache: %s", key, err.Error())
+	}
+	_ = p.rd.Increment(ctx, "version")
+
+	return nil
 }
 
 func (p *ProductService) AddProductImage(id uint, url, altText string) error {

@@ -123,7 +123,9 @@ func (s *Server) createProduct(c *gin.Context) {
 		utils.BadRequestResponse(c, "Invalid data!", err)
 		return
 	}
-	category, err := s.ProductService.CreateProduct(&req)
+
+	ctx := c.Request.Context()
+	category, err := s.ProductService.CreateProduct(ctx, &req)
 	if err != nil {
 		utils.InternalServerErrorResponse(c, "Failed to create product", err)
 		return
@@ -155,7 +157,9 @@ func (s *Server) updateProduct(c *gin.Context) {
 		utils.BadRequestResponse(c, "Invalid data!", err)
 		return
 	}
-	category, err := s.ProductService.UpdateProduct(uint(id), &req)
+
+	ctx := c.Request.Context()
+	category, err := s.ProductService.UpdateProduct(ctx, uint(id), &req)
 	if err != nil {
 		utils.InternalServerErrorResponse(c, "Failed to update product", err)
 		return
@@ -179,7 +183,9 @@ func (s *Server) deleteProduct(c *gin.Context) {
 		utils.BadRequestResponse(c, "Invalid product id!", err)
 		return
 	}
-	if err := s.ProductService.DeleteProduct(uint(id)); err != nil {
+
+	ctx := c.Request.Context()
+	if err := s.ProductService.DeleteProduct(ctx, uint(id)); err != nil {
 		utils.InternalServerErrorResponse(c, "Failed to delete product", err)
 		return
 	}
@@ -199,7 +205,8 @@ func (s *Server) getProducts(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
 
-	products, meta, err := s.ProductService.GetProducts(page, limit)
+	ctx := c.Request.Context()
+	products, meta, err := s.ProductService.GetProducts(ctx, page, limit)
 	if err != nil {
 		utils.InternalServerErrorResponse(c, "Failed to get product", err)
 		return
@@ -222,7 +229,9 @@ func (s *Server) getProduct(c *gin.Context) {
 		utils.BadRequestResponse(c, "Invalid product id!", err)
 		return
 	}
-	product, err := s.ProductService.GetProduct(uint(id))
+
+	ctx := c.Request.Context()
+	product, err := s.ProductService.GetProduct(ctx, uint(id))
 	if err != nil {
 		utils.InternalServerErrorResponse(c, "Failed to get product", err)
 		return
